@@ -1,0 +1,15 @@
+POST http://localhost:3000/api/auth/login HTTP/1.1
+content-type: application/json
+
+{"email": "s.kaouache@hotmail.fr", "password": "Djibril54"}
+
+###
+POST http://localhost:3000/api/auth/signup HTTP/1.1
+content-type: application/json
+
+{"name": "Chi", "email": "chi54850@hotmail.fr", "password": "Djibril54", "confirmPassword": "Djibril54"}
+
+###
+DELETE http://localhost:3000/api/post/636b0eea8c9315309217a61c HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2MzVmYTZjNDI3MzgwZjVkYmU3YWM2ODMiLCJpYXQiOjE2NjgyMTY5NTQsImV4cCI6MTY2ODMwMzM1NH0.ECESqAwYaWH7t9YC3XCNituWNqlh-1QP8aogsgoFUYM

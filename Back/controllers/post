@@ -1,0 +1,130 @@
+/************************************** LOGIQUE METIER **************************************/
+
+// Importation du module de Node "file system" de Node qui va nous permettre de gérer le téléchargement, la modification et la suppression d'images. //
+const fs = require("fs");
+const Post = require("../models/Post");
+const User = require("../models/User");
+
+exports.createPost = (req, res, next) => {
+  const postObject = JSON.parse(JSON.stringify(req.body));
+  console.log(postObject);
+  delete postObject._id;
+  // Création d'une instance à partir du constructeur présent dans le dossier models. //
+  const post = new Post({
+    // Spread //
+    ...postObject,
+    // Génération de l'URL de l'image. Req protocol nous permet de récupérer la partie HTTP, req.get("host") nous permet de récupérer l'hôte du serveur (localhost:3000). On ajoute /images/ et le nom du fichier pour compléter l'URL. //
+    imageUrl: `${req.protocol}://${req.get("host")}/images/${
+      req.file.filename
+    }`,
+  });
+  // Sauvegarde de notre sauce et envoi du status 201 avec le message "sauce enregistrée" en cas de réussite. Envoi du code erreur 400 et de l'erreur en cas d'échec. //
+  post
+    .save()
+    .then(() => res.status(201).json({ message: "Sauce enregistrée !" }))
+    // Si la création de la sauce ne se fait pas, envoi du code 400 et de l'erreur rencontrée. //
+    .catch((error) => {
+      res.status(400).json({ error });
+    });
+};
+
+// Fonction qui permet de récupérer une seule sauce. On l'exporte afin de pouvoir l'utiliser dans d'autres fichiers. //
+exports.getOnePost = (req, res, next) => {
+  // Utilisation de la méthode findOne en lui passant l'objet de comparaison. Ici on veut que l'id de la sauce soit le même que le paramètre de requête. //
+  Post.findOne({
+    _id: req.params.id,
+  })
+    // Si la sauce (l'id) est trouvée, alors on envoi la réponse (la sauce) avec le status 200. //
+    .then((post) => {
+      res.status(200).json(post);
+    })
+    // S'il y a une erreur on génère le code 404 pour indiquer que la sauce n'est pas trouvée. //
+    .catch((error) => {
+      res.status(404).json({
+        error: error,
+      });
+    });
+};
+
+// Fonction qui permet de modifier une sauce. On l'exporte afin de pouvoir l'utiliser dans d'autres fichiers. //
+exports.modifyPost = (req, res, next) => {
+  // Fonction ternaire qui va permettre de vérifier si la requête soumise (la modification de la sauce) contient bien une image. //
+  const postObject = req.file
+    ? {
+        ...JSON.parse(req.body.post),
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${
+          req.file.filename
+        }`,
+      }
+    : // Si le corps de la requête ne contient pas d'image. //
+      { ...req.body };
+  // Utilisation de la méthode findOne en lui passant l'objet de comparaison. Ici on veut que l'id de la sauce soit le même que le paramètre de requête. //
+  Post.findOne({ _id: req.params.id })
+    .then((post) => {
+      if (post.userId != req.auth.userId) {
+        res.status(403).send({ message: "Unauthorized request." });
+      } else {
+        // Suppression de l'ancienne image du serveur grâce à la méthode fs.unlink. //
+        const filename = post.imageUrl.split("/images/")[1];
+        fs.unlink(`images/${filename}`, () => {
+          // Mise à jour de la sauce avec les paramètres de la requête. //
+          Post.updateOne(
+            { _id: req.params.id },
+            { ...postObject, _id: req.params.id }
+          )
+            // Si la sauce se modifie correctement, envoi du code 200 et message "Sauce modifiée" si la sauce ne se modifie pas envoi code erreur 400. //
+            .then(() => res.status(200).send({ message: "Sauce modifiée !" }))
+            .catch((error) => res.status(400).send({ error }));
+        });
+      }
+    })
+    // Si problème d'éxécution de la fonction envoi du code 500. //
+    .catch((error) => res.status(500).send({ error }));
+};
+
+exports.deletePost = (req, res, next) => {
+  // Utilisation de la méthode findOne en lui passant l'objet de comparaison. Ici on veut que l'id de la sauce soit le même que le paramètre de requête. //
+  Post.findOne({ _id: req.params.id })
+    .then((post) => {
+      if (!post) {
+        return res.status(404).json({ message: "La sauce n'existe pas !" });
+      }
+      // Si l'id du créateur de la sauce est différent de celui qui fait la requête de suppression envoi du code 401 et message "Action non autorisée." //
+      if (post.userId != req.auth.userId) {
+        res.status(401).json({ message: "Action non autorisée." });
+      } else {
+        // Si l'id de requête correspond alors on supprime l'image du dossier grâce à la méthode fs.unlink. //
+        const filename = post.imageUrl.split("/images/")[1];
+        fs.unlink(`images/${filename}`, () => {
+          // On appelle ensuite la fonction pour en supprimer une. //
+          Post.deleteOne({ _id: req.params.id })
+            .then(() => {
+              // Si la sauce est supprimée, envoi du code 200 et du message "Objet supprimé !". //
+              res.status(200).json({ message: "Objet supprimé !" });
+            })
+            // Si l'objet ne se supprime pas alors envoi du code 401 et de l'erreur. //
+            .catch((error) => res.status(401).json({ error }));
+        });
+      }
+    })
+    // Si problème d'éxécution de la fonction envoi du code 500. //
+    .catch((error) => {
+      res.status(500).json(error);
+    });
+};
+
+// Fonction qui permet de récupérer toutes les sauces . On l'exporte afin de pouvoir l'utiliser dans d'autres fichiers. //
+exports.getAllPosts = (req, res, next) => {
+  // Recherche de l'existence d'une sauce grâce à la méthode .find. //
+  Post.find()
+    // Si des sauces existent on envoi un tableau de toutes les sauces existantes et un code 200. //
+    .then((posts) => {
+      res.status(200).send(posts);
+    })
+    .catch((error) => {
+      // Si la recherche rencontre une erreur envoi du code 400 et de l'erreur rencontrée. //
+      res.status(400).send({
+        error: error,
+      });
+    });
+};
