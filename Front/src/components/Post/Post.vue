@@ -1,26 +1,29 @@
 <script>
     export default {
         name:"Post",     
-        props: ["content", "imageUrl", "id", "currentUser", "likes", "userId", "email"],
+        props: ["content", "imageUrl", "_id", "currentUser", "likes", "userId", "email"],
         
   mounted() {},
   methods: {
     deletePost(e) {
-      console.log("id à supprimer :", this.$props.id)
+      console.log("_id à supprimer :", this.$props._id)
       console.log("props :", this.$props)
       const userId = localStorage.getItem('userId')
       console.log(userId)
       const paramsFetch = {
-        headers:   {Authorization: `Bearer ${localStorage.getItem("token")}`,
-                  "Accept": "application/json",},
+      headers:   {Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  "Accept": "application/json",
+                "Content-Type": "application/json"
+              },
       method: "DELETE",
       }
       const url = "http://localhost:3000/api/post/" 
-      fetch(url +  this.$props.id, paramsFetch)
+      fetch(url + this.$props._id, paramsFetch)
         .then((res) => {
           if (res.status === 200) {
             return res.json()
           } else {
+            console.log(userId)
             throw new Error("Suppression impossible.")
           }
         })
@@ -62,7 +65,7 @@
 </div>
    <label class="form-label" for="form3Example1cg">Publiez un commentaire</label>
    <div class="d-grid gap-2 d-md-flex justify-content-md-end"> -->
-<button type="submit" class="btn btn-danger mt-2 " v-if="currentUser === email" @click="deletePost">Supprimer la publication</button>
+<button type="submit" class="btn btn-danger mt-2 " @click="deletePost">Supprimer la publication</button>
 <button type="submit" class="btn btn-primary mt-2 " @click="modifyPost">Modifier la publication</button>
 </div>
 

@@ -14,17 +14,22 @@
         }}},
       mounted(){
         this.accessDenied()
-        const paramsFetch = {Authorization: `Bearer ${localStorage.getItem("token")}`,
-                  "Accept": "application/json"}
         const url = "http://localhost:3000/api/post/feed"
+        const paramsFetch = {
+      headers:   {Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  "Accept": "application/json",},
+      method: "GET",
+      }
         fetch(url, paramsFetch)
         .then((res) => res.json())
         .then((res) => {
           console.log("res:", res)
         const email = localStorage.getItem("email")
+        const userId = localStorage.getItem("userId")
         const posts = res
           this.posts = posts
           this.currentUser = email
+          console.log("userId :", this.userId)
           console.log("this.posts :", this.posts)
          console.log("email :", email)
          console.log("currentUser :", this.currentUser)
@@ -85,8 +90,8 @@
       <h2 class="text-center">Bienvenue sur votre fil d'actualité {{currentUser}}.</h2>
   <Form></Form>
 <div v-for="post in posts">
-  <Post :content="post.content" :imageUrl="post.imageUrl" :id="post.id"  :currentUser="currentUser"
-        :email="post.email"></Post>
+  <Post :content="post.content" :imageUrl="post.imageUrl" :_id="post._id"  :currentUser="currentUser"
+        :email="post.email" :userId="post.userId"></Post>
 </div>
 </div>
 </template>

@@ -1,14 +1,13 @@
 <script>
+import axios from 'axios'
 export default {
   name: 'LoginPage',
   data(){
       return {
-          inputLogin: {
               email: "",
               password: ""
           }
-      }
-  },
+      },
   methods: {
       login(email, password) {
           let url = "http://localhost:3000/api/auth/login"
