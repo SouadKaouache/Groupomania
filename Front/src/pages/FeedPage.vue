@@ -27,6 +27,7 @@
         const email = localStorage.getItem("email")
         const userId = localStorage.getItem("userId")
         const posts = res
+        this.userId = userId
           this.posts = posts
           this.currentUser = email
           console.log("userId :", this.userId)
@@ -91,7 +92,7 @@
   <Form></Form>
 <div v-for="post in posts">
   <Post :content="post.content" :imageUrl="post.imageUrl" :_id="post._id"  :currentUser="currentUser"
-        :email="post.email" :userId="post.userId"></Post>
+         :userId="post.userId"></Post>
 </div>
 </div>
 </template>

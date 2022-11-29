@@ -1,30 +1,21 @@
-/************************************** MIDDLEWARE D'AUTHENTIFICATION **************************************/
-
-// Importation du package jsonwebtoken. //
 const jwt = require("jsonwebtoken");
-// Importation du package dotenv afin de sécuriser certaines données sensibles liées au mdp ou à la base de données. //
-require("dotenv").config();
-// Stockage du token dans la constante RANDOM_TOKEN_SECRET. //
-// const RANDOM_TOKEN_SECRET = process.env.RANDOM_TOKEN_SECRET;
 
-// Ce middleware servira à toutes les authentifications sur toutes les routes. //
+// Export d'une fonction qui sera notre middleware
 module.exports = (req, res, next) => {
   try {
-    // On récupère le token dans le header de la requête authorization. Grâce à la méthode split on récupère le deuxième élément du tableau. //
+    // Récupération du TOKEN dans le header authorization et le split pour tout récupérer après l'espace dans le header
     const token = req.headers.authorization.split(" ")[1];
-    // On vérifie le token décodé avec la clé secrète initiée avec la création du token encodé précédemment, les clés doivent correspondre. //
+
+    //Decodage du TOKEN avec la méthode verify et jwt en lui passant le TOKEN récupéré et la clé secrète
     const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
-    // On vérifie que le userId envoyé dans la requête correspond au userId encodé dans le token. //
+
+    // Extraction de l'id utilisateur de notre TOKEN et ajout à la request pour que les routes puissent l'exploiter
     const userId = decodedToken.userId;
-    // Si le token est différent de celui de l'userId alors on envoi une erreur. //
-    if (req.body.userId && req.body.userId !== userId) {
-      throw "User ID invalide. ";
-    } else {
-      // Si la requête est authentifiée on passe au middleware suivant grâce à la méthode next(). //
-      next();
-    }
-    // Si l'authentification rencontre une erreur on envoi un code 401 et le message correspondant. //
+    req.auth = {
+      userId: userId,
+    };
+    next();
   } catch (error) {
-    res.status(401).json({ error: "Authentification échouée. " });
+    res.status(401).json({ error });
   }
 };

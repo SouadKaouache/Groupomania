@@ -14,7 +14,7 @@ router.get("/feed", auth, postCtrl.getAllPosts);
 //  RECUPERATION D'UNE SAUCE => Renvoi la sauce avec l'id. //
 router.get("/:id", auth, postCtrl.getOnePost);
 // MODIFICATION D'UNE SAUCE. => Met à jour la sauce et supprime l'image si une nouvelle est téléchargée. //
-// router.put("/:id", auth, multer, postCtrl.modifyPost);
+router.put("/:id", auth, multer, postCtrl.modifyPost);
 // SUPPRESSION D'UNE SAUCE => Supprime la sauce avec l'id. //
 router.delete("/:_id", auth, postCtrl.deletePost);
 // LIKE ET DISLIKE D'UNE SAUCE => Défini le like ou dislike mis par l'utilisateur. //

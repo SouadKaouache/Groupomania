@@ -42,9 +42,6 @@
         }
     }
 }
-
-
-
 //     methods:{
 //       signup: async function (name, email, password) {
 //       const body = JSON.stringify({

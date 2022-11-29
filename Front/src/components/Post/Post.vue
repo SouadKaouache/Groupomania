@@ -21,8 +21,10 @@
       fetch(url + this.$props._id, paramsFetch)
         .then((res) => {
           if (res.status === 200) {
+            // alert("Votre post a bien été supprimé.")
             return res.json()
           } else {
+            alert("Oups !!! Vous ne disposez pas des droits pour supprimer ce post.")
             console.log(userId)
             throw new Error("Suppression impossible.")
           }
@@ -32,8 +34,37 @@
           this.$router.go()
         })
         .catch((err) => console.log("err:", err))
-    }
-  }}
+    },
+  modifyPost(e){
+    console.log("_id à modifier :", this.$props._id)
+      console.log("props :", this.$props)
+      const userId = localStorage.getItem('userId')
+      console.log(userId)
+      const paramsFetch = {
+      headers:   {Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  "Accept": "application/json",
+                "Content-Type": "application/json"
+              },
+      method: "PUT",
+      }
+      const url = "http://localhost:3000/api/post/" 
+      fetch(url + this.$props._id, paramsFetch)
+        .then((res) => {
+          if (res.status === 200) {
+            res.json()
+            alert("Votre post a bien été modifié.")
+          } else {
+            alert("Oups !!! Vous ne disposez pas des droits pour modifier ce post.")
+            console.log(userId)
+            throw new Error("Modification impossible.")
+          }
+        })
+        .then((res) => {
+          console.log("res:", res)
+          // this.$router.go()
+        })
+        .catch((err) => console.log("err:", err))
+    } }}
 
 </script>
 <template>
@@ -45,7 +76,7 @@
 </div></div>
 <img v-if="imageUrl" :src="imageUrl" class="card-img-top" alt="..." />
   <div class="card-body">
-    <p class="card-text"> {{ content }} </p>
+    <p class="card-text" > {{ content }} </p>
     <!-- <i class="fa-regular fa-thumbs-up" @click="ratePost"></i>
     <i class="fa-solid fa-thumbs-up"></i> -->
     <div class="like-buttons" v-if="!likePending">

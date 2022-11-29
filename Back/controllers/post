@@ -7,25 +7,39 @@ const User = require("../models/User");
 
 exports.createPost = (req, res, next) => {
   const postObject = JSON.parse(JSON.stringify(req.body));
-  console.log(postObject);
   delete postObject._id;
+  if (req.file) {
+    postObject.imageUrl = `${req.protocol}://${req.get("host")}/images/${
+      req.file.filename
+    }`;
+  } else {
+    postObject.imageUrl = "";
+  }
   // Création d'une instance à partir du constructeur présent dans le dossier models. //
   const post = new Post({
     // Spread //
     ...postObject,
     // Génération de l'URL de l'image. Req protocol nous permet de récupérer la partie HTTP, req.get("host") nous permet de récupérer l'hôte du serveur (localhost:3000). On ajoute /images/ et le nom du fichier pour compléter l'URL. //
-    imageUrl: `${req.protocol}://${req.get("host")}/images/${
-      req.file.filename
-    }`,
+    // imageUrl: `${req.protocol}://${req.get("host")}/images/${
+    //   req.file.filename
+    // }`,
   });
+  console.log(post);
+  if (postObject.content === "" && postObject.imageUrl === "") {
+    return res
+      .status(400)
+      .json({ alert: "Vous ne pouvez pas soumettre un post vide." });
+  }
   // Sauvegarde de notre sauce et envoi du status 201 avec le message "sauce enregistrée" en cas de réussite. Envoi du code erreur 400 et de l'erreur en cas d'échec. //
-  post
-    .save()
-    .then(() => res.status(201).json({ message: "Sauce enregistrée !" }))
-    // Si la création de la sauce ne se fait pas, envoi du code 400 et de l'erreur rencontrée. //
-    .catch((error) => {
-      res.status(400).json(error);
-    });
+  else {
+    post
+      .save()
+      .then(() => res.status(201).json({ message: "Post enregistré !" }))
+      // Si la création de la sauce ne se fait pas, envoi du code 400 et de l'erreur rencontrée. //
+      .catch((error) => {
+        res.status(400).json(error);
+      });
+  }
 };
 
 // Fonction qui permet de récupérer une seule sauce. On l'exporte afin de pouvoir l'utiliser dans d'autres fichiers. //

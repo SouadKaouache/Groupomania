@@ -12,10 +12,12 @@
       this.imageChoosen = e.target.files[0]
     },
     sendPost() {
+      const userId = localStorage.getItem("userId")
       const url = "http://localhost:3000/api/post/form"
       const formData = new FormData()
       formData.append("content", this.content)
       formData.append("image", this.imageChoosen)
+      formData.append("userId", userId)
       const paramsFetch = {
         headers:   {Authorization: `Bearer ${localStorage.getItem("token")}`,
                   "Accept": "application/json",},
@@ -28,10 +30,13 @@
       console.log(formData)
       fetch(url, paramsFetch)
         .then((res) => {
+          if (res.status === 400) {
+    alert("Vous devez publier du texte et/ou une image.");
+  }
           if (res.status === 201) {
             return res.json()
           } else {
-            throw new Error("Le fetch de Form.vue a échoué.")
+            throw new Error("Erreur fetch form.")
           }
         })
         .then((res) => {
